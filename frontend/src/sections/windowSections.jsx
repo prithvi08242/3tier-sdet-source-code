@@ -45,7 +45,7 @@ export function MultipleWindows() {
     <Panel title="Multiple windows / tabs" testid="windows-panel">
       <div className="flex flex-wrap gap-3">
         <a data-testid="open-new-tab" href="/practice" target="_blank" rel="noopener noreferrer" className="rounded-md bg-zinc-800 border border-zinc-700 px-4 py-2 text-sm text-zinc-100">Open link in new tab</a>
-        <button data-testid="open-window" onClick={() => { window.open("/api-playground", "_blank"); setOpened(true); }} className="rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm font-semibold text-white">window.open()</button>
+        <button data-testid="open-window" onClick={() => { window.open("/rest-playground", "_blank"); setOpened(true); }} className="rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm font-semibold text-white">window.open()</button>
       </div>
       {opened && <p data-testid="window-status" className="mt-4 font-mono text-sm text-emerald-400">new window opened ✓</p>}
     </Panel>

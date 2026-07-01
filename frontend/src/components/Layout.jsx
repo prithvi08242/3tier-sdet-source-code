@@ -27,7 +27,7 @@ export const Header = () => {
           <Link to="/practice" data-testid="nav-practice" className={linkCls("/practice")}>
             Practice
           </Link>
-          <Link to="/api-playground" data-testid="nav-api" className={linkCls("/api-playground")}>
+          <Link to="/rest-playground" data-testid="nav-api" className={linkCls("/rest-playground")}>
             API Playground
           </Link>
           {user ? (

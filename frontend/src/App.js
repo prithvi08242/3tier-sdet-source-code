@@ -21,7 +21,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/practice" element={<Practice />} />
             <Route path="/practice/:slug" element={<SectionPage />} />
-            <Route path="/api-playground" element={<ApiPlayground />} />
+            <Route path="/rest-playground" element={<ApiPlayground />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

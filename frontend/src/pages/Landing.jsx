@@ -45,7 +45,7 @@ export default function Landing() {
                 Start Practicing <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/api-playground"
+                to="/rest-playground"
                 data-testid="hero-view-api"
                 className="inline-flex items-center gap-2 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-100 transition-colors"
               >
