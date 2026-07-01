@@ -1,0 +1,53 @@
+{
+  "summary": "First MVP test run of Test Automation & DevOps Practice Ground. Backend: 13/13 pytest cases pass (auth register/login/me/logout, JWT via Bearer, todos CRUD with auth, pagination shape, search/completed filters, status echo, delay ~2s, flaky 200/500, echo, sample users). Frontend: Landing → /practice with 30 cards, admin login, register+auto-login, basic-form, table-automation, modal-dialog, tabs, slider, date-picker, dynamic-list, shadow-dom, network-delay (real backend call), flaky-element, logout — all pass. ONE CRITICAL BUG: /api-playground route collides with Kubernetes ingress /api/* → backend; the page renders as FastAPI JSON 404 instead of React, breaking the entire API Playground UI feature.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "seed_admin", "issue": "seed_admin updates existing admin password when it changes but does NOT clear login_attempts lockout for that admin; low impact for tests."},
+      {"endpoint": "/api/auth/refresh", "issue": "Only sets access_token cookie, does not return refresh_token or rotate it; also does not update client-usable state on frontend since token is stored in localStorage (mismatch)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "ApiPlayground page (/api-playground)", "issue": "Route path starts with '/api' which is the same prefix that Kubernetes ingress redirects to backend port 8001. Backend returns {\"detail\":\"Not Found\"} JSON instead of serving the React SPA. Entire API Playground UI is unreachable in the preview environment. Also breaks nav-api link and hero-view-api button.", "selector": "[data-testid=\"nav-api\"], [data-testid=\"hero-view-api\"], /api-playground", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Rename /api-playground route to something that does NOT start with /api (e.g. /playground, /rest-playground, /apis-lab). Update: (1) App.js Route path, (2) Layout.jsx nav-api Link, (3) Landing.jsx hero-view-api Link. Value of data-testids for run-/response- selectors can be kept as-is.",
+    "After renaming, retest the API Playground E2E: GET /playground/health returns status 200 in response block; POST /playground/todos when authenticated returns 201.",
+    "Optional: seed_admin should also delete stale login_attempts entries for admin email on startup to avoid lockout stickiness across restarts."
+  ],
+  "critical_code_review_comments": [
+    "server.py hardcodes CORS allow_origins to include http://localhost:3000 and FRONTEND_URL only; if frontend URL changes, extend list. Also allow_credentials=True with a specific origin is correct — good.",
+    "server.py cookies set with secure=False; acceptable for preview but flag for production (should be True in HTTPS prod). SameSite=lax is fine.",
+    "AuthContext stores access_token in localStorage AND server sets httpOnly cookie — dual mechanism can drift. Prefer one source of truth. Current impl works because axios interceptor adds Bearer header from localStorage.",
+    "JWT_SECRET is stored in backend/.env in repo — flag for real deployment (rotate + never commit).",
+    "seed_admin uses env ADMIN_EMAIL/ADMIN_PASSWORD; hash format is $2b$ (bcrypt) — verified via successful login. Good.",
+    "server.py file is 384 lines — acceptable but auth/playground/todos should ideally live in separate routers as it grows.",
+    "MongoDB _id is correctly excluded from playground endpoints (uses uuid `id` field and projects _id:0). ObjectId is stringified in public_user(). Good."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (new)"
+  ],
+  "success_rate": {"backend": "100% (13/13)", "frontend": "92% (12/13 flows — API Playground blocked)"},
+  "test_credentials": "Admin: admin@example.com / admin123 (seeded, verified). Registration works with unique sdet+<ts>@example.com / test1234.",
+  "seed_data_creation": "Admin user seeded by backend startup. Test-created todos and users are transient; cleanup handled by using unique emails / UUID todo ids.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend fully green via pytest at /app/backend/tests/backend_test.py. Only blocker is the /api-playground → backend routing collision. After main agent renames the route, re-run: (1) navigate to new route, (2) click run--playground-health, expect response--playground-health to contain 'status: 200' and 'ok'; (3) after admin login, click run--playground-todos → response--playground-todos should contain 'status: 201'. Landing page and Layout links must also point to the new path. All 30 practice section slugs load; testids follow patterns like bf-*, cb-*, dl-*, list-*, delay-*, flaky-*, tab-*, hover-*, drag-*, keyboard-*, etc.",
+  "rca_of_the_issue": {
+    "bug": "GET /api-playground returns {\"detail\":\"Not Found\"} (FastAPI 404) instead of the React SPA.",
+    "root_cause": "Kubernetes ingress in this environment forwards ALL requests whose path begins with '/api' to the backend service on port 8001. The React route '/api-playground' matches that prefix, so the request never reaches the frontend. FastAPI has no matching endpoint and returns 404.",
+    "reproduction_steps": [
+      "curl -s https://devops-sdet-labs.preview.emergentagent.com/api-playground → returns FastAPI JSON 404",
+      "In browser, click 'API Playground' nav link → shows raw JSON error, not React UI"
+    ],
+    "mitigation": "Rename the frontend route to a path that does not start with '/api'. Suggested: '/playground', '/rest-lab', or '/api-lab' → '/apis-lab'. Update App.js Route, Layout.jsx nav Link (data-testid=\"nav-api\" href), Landing.jsx hero-view-api href. No backend changes needed."
+  }
+}

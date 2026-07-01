@@ -4,12 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/index.css";
 import App from "@/App";
 
+document.documentElement.classList.add("dark");
+
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      staleTime: 60_000,
-      refetchOnWindowFocus: false,
-    },
+    queries: { staleTime: 60_000, refetchOnWindowFocus: false },
   },
 });
 
