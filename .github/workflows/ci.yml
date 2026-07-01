@@ -19,18 +19,44 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+      # Uses the Python preinstalled on ubuntu-latest (no setup-python action,
+      # which avoids the Node 20 deprecation warning).
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+
+      - name: Show Python version
+        run: python3 --version
+
       - name: Install backend deps
-        run: pip install -r backend/requirements.txt
-      - name: Run API tests (pytest)
+        # requirements.txt pins emergentintegrations (Emergent private index, not on PyPI),
+        # so we install only the packages needed to run server.py + the API tests.
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install fastapi "uvicorn[standard]" motor pymongo pyjwt \
+            bcrypt email-validator python-dotenv "pydantic>=2" requests pytest
+
+      - name: Start server and run API tests
         env:
           MONGO_URL: mongodb://localhost:27017
           DB_NAME: ci_test
           JWT_SECRET: ci-secret-key
-        run: pytest tests/api -q || echo "Add your pytest suite under tests/api"
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: admin123
+          BASE_URL: http://localhost:8001
+        run: |
+          cd backend
+          uvicorn server:app --host 0.0.0.0 --port 8001 &
+          SERVER_PID=$!
+          cd ..
+          echo "Waiting for backend to be ready..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8001/api/playground/health >/dev/null; then
+              echo "Backend is up."
+              break
+            fi
+            sleep 1
+          done
+          pytest tests/api -q
+          kill $SERVER_PID || true
 
   frontend-unit:
     runs-on: ubuntu-latest
@@ -42,8 +68,10 @@ jobs:
       - name: Install frontend deps
         working-directory: frontend
         run: yarn install --frozen-lockfile || yarn install
-      - name: Run unit tests (jest/vitest)
+      - name: Run unit tests (jest)
         working-directory: frontend
+        env:
+          CI: "true"
         run: yarn test --watchAll=false || echo "Configure jest/vitest tests"
 
   e2e:
@@ -58,4 +86,4 @@ jobs:
           npm i -D @playwright/test
           npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npx playwright test || echo "Add your Playwright specs under tests/e2e"
+        run: npx playwright test || echo "Add your Playwright specs under tests/e2e (needs a running frontend URL)"
