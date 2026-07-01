@@ -43,27 +43,33 @@ export function ShadowDom() {
     const host = hostRef.current;
     if (!host || host.shadowRoot) return;
     const root = host.attachShadow({ mode: "open" });
-    const wrap = document.createElement("div");
-    wrap.innerHTML = `
-      <style>
-        .box{border:1px solid #3f3f46;border-radius:8px;padding:16px;background:#000;}
-        input{background:#09090b;border:1px solid #27272a;color:#f4f4f5;padding:8px;border-radius:6px;width:100%;box-sizing:border-box;}
-        button{margin-top:8px;background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;}
-        p{color:#34d399;font-family:monospace;margin-top:10px;}
-      </style>
-      <div class="box">
-        <input data-testid="shadow-input" placeholder="Inside shadow root" />
-        <button data-testid="shadow-button">Copy to output</button>
-        <p data-testid="shadow-output">(empty)</p>
-      </div>`;
-    root.appendChild(wrap);
-    const input = root.querySelector('[data-testid="shadow-input"]');
-    const btn = root.querySelector('[data-testid="shadow-button"]');
-    const out = root.querySelector('[data-testid="shadow-output"]');
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .box{border:1px solid #3f3f46;border-radius:8px;padding:16px;background:#000;}
+      input{background:#09090b;border:1px solid #27272a;color:#f4f4f5;padding:8px;border-radius:6px;width:100%;box-sizing:border-box;}
+      button{margin-top:8px;background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;}
+      p{color:#34d399;font-family:monospace;margin-top:10px;}`;
+
+    const box = document.createElement("div");
+    box.className = "box";
+    const input = document.createElement("input");
+    input.setAttribute("data-testid", "shadow-input");
+    input.setAttribute("placeholder", "Inside shadow root");
+    const btn = document.createElement("button");
+    btn.setAttribute("data-testid", "shadow-button");
+    btn.textContent = "Copy to output";
+    const out = document.createElement("p");
+    out.setAttribute("data-testid", "shadow-output");
+    out.textContent = "(empty)";
+
     btn.addEventListener("click", () => {
       out.textContent = input.value || "(empty)";
       setValue(input.value || "(empty)");
     });
+
+    box.append(input, btn, out);
+    root.append(style, box);
   }, []);
   return (
     <Panel title="Shadow DOM host" testid="shadow-panel">

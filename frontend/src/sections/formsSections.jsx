@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Panel } from "@/components/Layout";
 
 export function BasicForm() {
@@ -31,7 +31,8 @@ export function ButtonInteractions() {
   const [log, setLog] = useState([]);
   const [label, setLabel] = useState("Click to relabel");
   const [delayedVisible, setDelayedVisible] = useState(false);
-  const add = (m) => setLog((l) => [m, ...l].slice(0, 8));
+  const logId = useRef(0);
+  const add = (m) => setLog((l) => [{ id: ++logId.current, text: m }, ...l].slice(0, 8));
   const delayed = () => {
     setDelayedVisible(false);
     setTimeout(() => setDelayedVisible(true), 2000);
@@ -47,7 +48,7 @@ export function ButtonInteractions() {
       </div>
       {delayedVisible && <button data-testid="btn-delayed" onClick={() => add("delayed appeared & clicked")} className="mt-4 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">I appeared!</button>}
       <ul data-testid="btn-log" className="mt-6 space-y-1 font-mono text-sm text-emerald-400">
-        {log.map((l, i) => <li key={i} data-testid="btn-log-item">&gt; {l}</li>)}
+        {log.map((item) => <li key={item.id} data-testid="btn-log-item">&gt; {item.text}</li>)}
       </ul>
     </Panel>
   );

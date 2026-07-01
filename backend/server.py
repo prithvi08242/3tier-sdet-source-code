@@ -9,7 +9,7 @@ import jwt
 import bcrypt
 import uuid
 import asyncio
-import random
+import secrets
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -315,7 +315,7 @@ async def delayed(seconds: float):
 
 @api_router.get("/playground/flaky")
 async def flaky():
-    if random.random() < 0.5:
+    if secrets.randbelow(2) == 0:
         raise HTTPException(status_code=500, detail="Flaky server error, retry")
     return {"message": "Success on this attempt", "lucky": True}
 
