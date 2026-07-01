@@ -42,8 +42,8 @@ export const ZIP_LOOKUP = {
 };
 
 export const SHIPPING_METHODS = [
-  { id: "standard", label: "Standard", eta: "5–7 business days", cost: 0 },
-  { id: "express", label: "Express", eta: "2–3 business days", cost: 9.99 },
+  { id: "standard", label: "Standard", eta: "5-7 business days", cost: 0 },
+  { id: "express", label: "Express", eta: "2-3 business days", cost: 9.99 },
   { id: "overnight", label: "Overnight", eta: "next business day", cost: 24.99 },
 ];
 
