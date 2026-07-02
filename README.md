@@ -36,7 +36,7 @@ Change these via `ADMIN_*` / `DEFAULT_USER_*` in `backend/.env` (the seeder upda
 ### Prerequisites
 - **Node.js 20+** and **Yarn**
 - **Python 3.11+**
-- **MongoDB** (local install, or run via Docker: `docker run -d -p 27017:27017 mongo:7.0`)
+- **MongoDB** (local install, or run via Docker: `docker run -d --name=mongodb -p 27017:27017 mongo:7.0`)
 
 ### 1) Clone
 ```bash
@@ -54,8 +54,13 @@ Edit `backend/.env` and set a real `JWT_SECRET` (e.g. `openssl rand -hex 32`).
 ### 3) Run the backend
 ```bash
 cd backend
+python3 -m venv .venv
+python3.12 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt      # or: pip install fastapi "uvicorn[standard]" motor pymongo pyjwt bcrypt email-validator python-dotenv "pydantic>=2"
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload 
+#or to run in dtached mode any one of them
+nohup uvicorn server:app --host 0.0.0.0 --port 8001 --reload > uvicorn.log 2>&1 &
 ```
 Backend is at **http://localhost:8001** (interactive docs at **http://localhost:8001/docs**).
 
@@ -64,10 +69,16 @@ Backend is at **http://localhost:8001** (interactive docs at **http://localhost:
 cd frontend
 yarn install
 yarn start                            # opens http://localhost:3000
+#or open in detached mode
+nohup yarn start > frontend.log 2>&1 &
 ```
-
 Open **http://localhost:3000** and log in with a seeded account above.
 
+
+# by any chnace you want to kill backeend and front end process
+Service	Find PID	Kill
+Backend (8001)	lsof -i :8001	kill <PID>
+Frontend (3000)	lsof -i :3000	kill <PID>
 ---
 
 ## 🐳 Run with Docker (one command)
