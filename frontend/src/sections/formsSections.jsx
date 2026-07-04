@@ -1,5 +1,4 @@
-import React, { useRef, useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useRef, useState } from "react";
 
 export function BasicForm() {
   const [submitted, setSubmitted] = useState(null);

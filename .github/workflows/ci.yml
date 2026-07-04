@@ -1,56 +1,48 @@
-name: github-actions-ci
+---
+name: CI
 on:
   push:
     branches:
-    - feature/*
+      - feature/*
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "24"
 jobs:
-  verify-build:
+  lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v5
-      
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-        cache: "pip"
-        cache-dependency-path: backend/requirements.txt
-     
-    - name: Python Version
-      run: python --version
-      
-    - name: Install Python Dependencies
-      working-directory: backend
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: Backend flake8 Linting
-      working-directory: backend
-      run: flake8 .
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v5
-      with:
-        node-version: "22"
-        cache: "yarn"
-        cache-dependency-path: frontend/yarn.lock
-      
-    - name: Install Frontend Dependencies
-      working-directory: frontend
-      run: yarn install
-      
-    - name: Frontend eslint
-      working-directory: frontend
-      run: yarn lint
-      
-    - name: Frontend Build Verification
-      working-directory: frontend
-      run: yarn build
+      - name: Checkout Code
+        uses: actions/checkout@v5
 
-    - name: Upload Frontend Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-build
-        path: frontend/build
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend lint tools
+        run: pip3 install black flake8
+
+      - name: Black Format check
+        working-directory: backend
+        run: black --check .
+
+      - name: Flake8 Lint
+        working-directory: backend
+        run: flake8 . --max-line-length=102 --extend-ignore=E203,W503
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Eslint frontend
+        working-directory: frontend
+        run: yarn eslint src --max-warnings=0

@@ -1,9 +1,7 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { useCheckoutForm } from "@/hooks/useCheckoutForm";
 import { COUNTRIES, SHIPPING_METHODS } from "@/data/locations";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 const INPUT_CLS =
   "w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none";

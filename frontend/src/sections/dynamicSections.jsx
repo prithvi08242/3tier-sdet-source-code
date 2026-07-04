@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
 export function DynamicContent() {

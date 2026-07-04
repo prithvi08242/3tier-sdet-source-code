@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useMemo, useState } from "react";
 
 const ROWS = [
   { id: 1, name: "Ada Lovelace", role: "admin", score: 92 },

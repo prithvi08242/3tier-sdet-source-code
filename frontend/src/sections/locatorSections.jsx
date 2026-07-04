@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useEffect, useRef, useState } from "react";
 
 export function LocatorPractice() {
   return (

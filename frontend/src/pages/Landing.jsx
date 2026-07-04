@@ -1,7 +1,4 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Boxes, Code2, ShieldCheck, Container } from "lucide-react";
+import { Boxes, Code2, ShieldCheck, Container } from "lucide-react";
 import { SECTIONS } from "@/data/sections";
 
 const features = [

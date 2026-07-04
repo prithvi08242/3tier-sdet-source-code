@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useState } from "react";
 
 export function FileUpload() {
   const [name, setName] = useState("");
