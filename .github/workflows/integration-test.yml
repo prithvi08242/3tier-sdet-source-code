@@ -30,12 +30,40 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      - name: Download Frontend Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/build
+      - name: Get Artifact Download URL
+          id: artifact
+          env:
+            GH_TOKEN: ${{ github.token }}
+            RUN_ID: ${{ github.event.workflow_run.id }}
+          run: |
+            ARTIFACT_URL=$(curl -s \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts" \
+              | jq -r '.artifacts[] | select(.name=="frontend-build") | .archive_download_url')
 
+            if [ -z "$ARTIFACT_URL" ] || [ "$ARTIFACT_URL" = "null" ]; then
+              echo "Artifact not found."
+              exit 1
+            fi
+
+            echo "url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
+
+      - name: Download Frontend Build Artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p frontend
+
+          curl -L \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${{ steps.artifact.outputs.url }}" \
+            -o frontend-build.zip
+
+      - name: Extract Frontend Build Artifact
+        run: |
+          unzip -o frontend-build.zip -d frontend/build
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
