@@ -1,65 +1,125 @@
-import os
-import requests
+---
+name: CI
+on:
+  push:
+    branches:
+      - feature/*
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "24"
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
 
-BASE = os.environ.get("BASE_URL", "http://localhost:8001") + "/api"
-ADMIN = {"email": "admin@example.com", "password": "admin123"}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
 
+      - name: Install backend lint tools
+        run: pip3 install black flake8
 
-def auth_token():
-    r = requests.post(f"{BASE}/auth/login", json=ADMIN)
-    assert r.status_code == 200, r.text
-    return r.json()["access_token"]
+      - name: Black Format check
+        working-directory: backend
+        run: black --check .
 
+      - name: Flake8 Lint
+        working-directory: backend
+        run: flake8 . --max-line-length=102 --extend-ignore=E203,W503
 
-def test_health():
-    r = requests.get(f"{BASE}/playground/health")
-    assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
 
-def test_login_returns_token():
-    r = requests.post(f"{BASE}/auth/login", json=ADMIN)
-    assert r.status_code == 200
-    assert "access_token" in r.json()
+      - name: Eslint frontend
+        working-directory: frontend
+        run: yarn eslint src --max-warnings=0
+  
+  backend-tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
 
-def test_login_invalid():
-    r = requests.post(
-        f"{BASE}/auth/login", json={"email": "admin@example.com", "password": "wrong"}
-    )
-    assert r.status_code == 401
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+   
+      - name: start backend in background
+        working-directory: backend
+        env:
+          MONGO_URL: mongodb://localhost:27017
+          DB_NAME: practiceground_ci
+          JWT_SECRET: ci-test-secret-do-not-use-in-prod
+        run: |
+          nohup uvicorn server:app --host 0.0.0.0 --port 8001 > uvicorn.log 2>&1 &
+          for i in {1..15}; do
+            curl -sf http://localhost:8001/api/playground/health && break
+            echo "Waiting for backend..."; sleep 2
+          done
 
+      - name: Run Api Test
+        env:
+          BASE_URL: http://localhost:8001
+        run: pip install requests pytest && pytest tests/api -q
 
-def test_todos_pagination():
-    r = requests.get(f"{BASE}/playground/todos?page=1&limit=5")
-    assert r.status_code == 200
-    body = r.json()
-    assert {"data", "page", "limit", "total", "total_pages"} <= set(body.keys())
+      - name: Upload backend logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-logs
+          path: backend/uvicorn.log
 
+  frontend-tests:
+    needs: backend-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-def test_create_todo_requires_auth():
-    r = requests.post(f"{BASE}/playground/todos", json={"title": "x"})
-    assert r.status_code == 401
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: "yarn"
+          cache-dependenct-path: frontend/yarn.lock
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
 
-def test_create_and_delete_todo():
-    token = auth_token()
-    headers = {"Authorization": f"Bearer {token}"}
-    r = requests.post(
-        f"{BASE}/playground/todos", json={"title": "pytest todo"}, headers=headers
-    )
-    assert r.status_code == 201
-    todo_id = r.json()["id"]
-    d = requests.delete(f"{BASE}/playground/todos/{todo_id}", headers=headers)
-    assert d.status_code == 200
+      - name: Run Jest unit tests
+        working-directory: frontend
+        run: yarn test --watchAll=false
 
-
-def test_status_echo():
-    r = requests.get(f"{BASE}/playground/status/404")
-    assert r.status_code == 404
-
-
-def test_echo():
-    r = requests.post(f"{BASE}/playground/echo", json={"a": 1})
-    assert r.status_code == 200
-    assert r.json()["you_sent"] == {"a": 1}
+         
