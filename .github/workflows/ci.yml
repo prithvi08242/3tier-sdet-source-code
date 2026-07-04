@@ -48,7 +48,7 @@ jobs:
         run: yarn eslint src --max-warnings=0
   
   backend-tests:
-    need: lint
+    needs: lint
     runs-on: ubuntu-latest
     services:
       mongodb:
