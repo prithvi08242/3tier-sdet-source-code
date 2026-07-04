@@ -12,72 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v5
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{env.PYTHON_VERSION}}
-          cache: pip
-          cache-dependency-path: backend/requirements.txt
-
-      - name: Install backend lint tools
-        run: pip3 install black flake8
-
-      - name: Black Format check
-        working-directory: backend
-        run: black --check .
-
-      - name: Flake8 Lint
-        working-directory: backend
-        run: flake8 . --max-line-length=102 --extend-ignore=E203,W503
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{env.NODE_VERSION}}
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: yarn install --frozen-lockfile
-
-      - name: Eslint frontend
-        working-directory: frontend
-        run: yarn eslint src --max-warnings=0
-  
-  backend-tests:
-    needs: lint
-    runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-
-      ---
-name: CI
-on:
-  push:
-    branches:
-      - feature/*
-env:
-  PYTHON_VERSION: "3.11"
-  NODE_VERSION: "24"
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -153,5 +87,3 @@ jobs:
             curl -sf http://localhost:8001/api/playground/health && break
             echo "Waiting for backend..."; sleep 2
           done
-
-    
