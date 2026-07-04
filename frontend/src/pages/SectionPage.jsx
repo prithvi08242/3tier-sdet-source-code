@@ -1,7 +1,5 @@
-import React from "react";
 import { useParams } from "react-router-dom";
 import { getSection } from "@/data/sections";
-import { SectionShell } from "@/components/Layout";
 import { BasicForm, ButtonInteractions, CheckboxesRadio, Dropdowns } from "@/sections/formsSections";
 import { LocatorPractice, HiddenElements, ShadowDom, ComplexDom } from "@/sections/locatorSections";
 import { DynamicContent, WaitsSync, StaleElement, DynamicList, NetworkDelay, FlakyElement } from "@/sections/dynamicSections";

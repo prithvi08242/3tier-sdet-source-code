@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Panel } from "@/components/Layout";
+import { useState } from "react";
 import { api, API } from "@/lib/api";
 
 const ENDPOINTS = [

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 

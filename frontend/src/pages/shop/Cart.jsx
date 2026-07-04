@@ -1,8 +1,6 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { Trash2 } from "lucide-react";
 
 export default function Cart() {
   const { items, setQty, removeItem, total, count } = useCart();

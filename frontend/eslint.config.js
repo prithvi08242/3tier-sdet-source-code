@@ -3,6 +3,7 @@ import globals from "globals";
 import reactPlugin from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import unusedImports from "eslint-plugin-unused-imports";
 
 export default [
   js.configs.recommended,
@@ -28,6 +29,7 @@ export default [
       react: reactPlugin,
       "react-hooks": reactHooks,
       "jsx-a11y": jsxA11y,
+      "unused-imports": unusedImports,
     },
 
     settings: {
@@ -37,12 +39,19 @@ export default [
     },
 
     rules: {
-      "no-unused-vars": "warn",
-      "no-console": "warn",
-      "react/react-in-jsx-scope": "off",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-    },
+  "no-unused-vars": "off",
+  "unused-imports/no-unused-imports": "error",
+  "unused-imports/no-unused-vars": [
+    "warn",
+    { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }
+  ],
+  "no-console": ["warn", { allow: ["warn", "error"] }],
+  "react/react-in-jsx-scope": "off",
+  "react/jsx-uses-vars": "error",
+  "react-hooks/rules-of-hooks": "error",
+  "react-hooks/exhaustive-deps": "warn",
+},
+
   },
 
   {

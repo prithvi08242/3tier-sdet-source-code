@@ -1,6 +1,4 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Terminal, LogOut, User, FlaskConical, ShoppingCart } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 
