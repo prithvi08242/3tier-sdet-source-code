@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -62,10 +62,10 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{env.PYTHON_VERSION}}
           cache: "pip"
@@ -94,24 +94,23 @@ jobs:
  
       - name: Upload backend logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-logs
           path: backend/uvicorn.log
     
   frontend-tests:
-    needs: backend-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{env.NODE_VERSION}}
           cache: "yarn"
-          cache-dependenct-path: frontend/yarn.lock
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install frontend dependencies
         working-directory: frontend
