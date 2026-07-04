@@ -1,10 +1,10 @@
-name: github-actions-ci
+name: build
 on:
   push:
     branches:
-    - main
+    - feature/*
 jobs:
-  verify-build:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
@@ -54,3 +54,24 @@ jobs:
       with:
         name: frontend-build
         path: frontend/build
+
+    - name: Serve Frontend Build
+      working-directory: frontend
+      run: |
+        nohup npx serve -s build -l 3000 > frontend.log 2>&1 &
+
+        echo "Waiting for frontend to start..."
+
+        for i in {1..30}; do
+          if curl -fs http://localhost:3000 >/dev/null; then
+            echo "Frontend is up!"
+            exit 0
+          fi
+
+          echo "Waiting... ($i/30)"
+          sleep 2
+        done
+
+        echo "Frontend failed to start."
+        cat frontend.log
+        exit 1

@@ -3,7 +3,7 @@ name: integration-test
 on:
   push:
     branches:
-    - feature/*
+    - main
 
 jobs:
   integration-test:
@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: hello world
-      run: echo "Hello, world!"
+    - name: Checkout Code
+      uses: actions/checkout@v5
+
       
     
     
