@@ -31,15 +31,15 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download Frontend Build Artifact
-          env:
-            GH_TOKEN: ${{ github.token }}
-            RUN_ID: ${{ github.event.workflow_run.id }}
-          run: |
-            mkdir -p frontend
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          mkdir -p frontend
 
-            gh run download "$RUN_ID" \
-              -n frontend-build \
-              -D frontend/build
+          gh run download "$RUN_ID" \
+            -n frontend-build \
+            -D frontend/build
 
-            echo "Downloaded files:"
-            ls -R frontend/build
+          echo "Downloaded files:"
+          ls -R frontend/build
