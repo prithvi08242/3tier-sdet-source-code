@@ -43,3 +43,36 @@ jobs:
 
           echo "Downloaded files:"
           ls -R frontend/build
+
+            
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Serve Frontend Build
+        working-directory: frontend
+        run: |
+          nohup npx serve -s build -l 3000 > frontend.log 2>&1 &
+
+          echo "Waiting for frontend to start..."
+          STARTED=false
+
+          for i in {1..30}; do
+            if curl -fs http://localhost:3000 >/dev/null; then
+              echo "Frontend is up!"
+              STARTED=true
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+
+          if [ "$STARTED" = false ]; then
+            echo "Frontend failed to start."
+            cat frontend.log
+            exit 1
+          fi
+          
