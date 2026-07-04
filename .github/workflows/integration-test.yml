@@ -1,11 +1,14 @@
 name: integration-test
-
 on:
-  workflow_run:
-    workflows:
-      - github-actions-ci
-    types:
-      - completed
+  push:
+    branches:
+      - feature/*
+#on:
+  #workflow_run:
+    #workflows:
+      #- github-actions-ci
+    #types:
+      #- completed
 
 jobs:
   integration-test:
