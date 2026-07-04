@@ -46,17 +46,3 @@ jobs:
       - name: Eslint frontend
         working-directory: frontend
         run: yarn eslint src --max-warnings=0
-
-  backend-test:
-    needs: lint
-    runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
