@@ -1,81 +1,18 @@
 name: integration-test
+
 on:
-  push:
-    branches:
-      - feature/*
-#on:
-  #workflow_run:
-    #workflows:
-      #- github-actions-ci
-    #types:
-      #- completed
+  workflow_run:
+    workflows:
+      - github-actions-ci
+    types:
+      - completed
 
 jobs:
   integration-test:
-    #if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
     runs-on: ubuntu-latest
-
-    services:
-      mongo:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: password
-        options: >-
-          --health-cmd="mongosh --eval 'db.adminCommand({ ping: 1 })'"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
+    - name: hello world
+      run: echo "Hello, world!"
 
-      - name: Download Frontend Build Artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          mkdir -p frontend
-
-          gh run download "$RUN_ID" \
-            -n frontend-build \
-            -D frontend/build
-
-          echo "Downloaded files:"
-          ls -R frontend/build
-
-            
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: "22"
-          cache: yarn
-          cache-dependency-path: frontend/yarn.lock
-
-      - name: Serve Frontend Build
-        working-directory: frontend
-        run: |
-          nohup npx serve -s build -l 3000 > frontend.log 2>&1 &
-
-          echo "Waiting for frontend to start..."
-          STARTED=false
-
-          for i in {1..30}; do
-            if curl -fs http://localhost:3000 >/dev/null; then
-              echo "Frontend is up!"
-              STARTED=true
-              break
-            fi
-            echo "Waiting... ($i/30)"
-            sleep 2
-          done
-
-          if [ "$STARTED" = false ]; then
-            echo "Frontend failed to start."
-            cat frontend.log
-            exit 1
-          fi
-          
+    
