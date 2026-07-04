@@ -33,7 +33,7 @@ jobs:
         run: flake8 . --max-line-length=102 --extend-ignore=E203,W503
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{env.NODE_VERSION}}
           cache: "yarn"
@@ -99,3 +99,26 @@ jobs:
           name: backend-logs
           path: backend/uvicorn.log
     
+  frontend-tests:
+    needs: backend-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: "yarn"
+          cache-dependenct-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Run Jest unit tests
+        working-directory: frontend
+        run: yarn test --watchAll=false
+
+         
