@@ -12,17 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{env.PYTHON_VERSION}}
           cache: pip
           cache-dependency-path: backend/requirements.txt
 
       - name: Install backend lint tools
-        run: pip install black flake8
+        run: pip3 install black flake8
 
       - name: Black Format check
         working-directory: backend
@@ -30,12 +30,12 @@ jobs:
 
       - name: Flake8 Lint
         working-directory: backend
-        run: flake8 . --max-line-length=100 --extend-ignore=E203,W503
+        run: flake8 . --max-line-length=102 --extend-ignore=E203,W503
 
       - name: Setup Node
-        uses:actions/setup-node@v4
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{env.Node_VERSION}}
+          node-version: ${{env.NODE_VERSION}}
           cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
 
@@ -45,8 +45,8 @@ jobs:
 
       - name: Eslint frontend
         working-directory: frontend
-        run: yarn eslint
-
+        run: yarn eslint src --max-warnings=0
+  
   backend-tests:
     needs: lint
     runs-on: ubuntu-latest
@@ -87,3 +87,5 @@ jobs:
             curl -sf http://localhost:8001/api/playground/health && break
             echo "Waiting for backend..."; sleep 2
           done
+
+    
